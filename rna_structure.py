@@ -1,6 +1,6 @@
 from typing import List, Set, Tuple, Optional
 import numpy as np
-from utils import complementary, bplist2db
+from utils import complementary, bplist2db, bcolors
 
 class RNAStructure:
     def __init__(self, sequence: str, structure: Optional[str] = None, base_pairs: Optional[Set[Tuple[int, int]]] = None):
@@ -51,19 +51,23 @@ class RNAStructure:
         """Check if (i,j) would form a valid base pair"""
         # Check indices
         if not (0 <= i < j < self.length):
+            print(f"{bcolors.WARNING}WARNING: Invalid indices: i={i}, j={j}, length={self.length}{bcolors.ENDC}")
             return False
         
         # Check complementarity
         if not complementary(self.sequence[i], self.sequence[j]):
+            print(f"{bcolors.WARNING}WARNING: Non-complementary bases: {self.sequence[i]}-{self.sequence[j]}. Path finding algorithm will propably fail{bcolors.ENDC}")
             return False
         
         # Check for conflicts with existing pairs
         for x, y in self.base_pairs:
             # No base can be paired twice
             if i in (x, y) or j in (x, y):
+                print(f"Base {i if i in (x,y) else j} is already paired in pair ({x},{y})")
                 return False
             # No crossing pairs
             if (x < i < y < j) or (i < x < j < y):
+                print(f"Crossing pairs: trying to add ({i},{j}) would cross existing pair ({x},{y})")
                 return False
                 
         return True

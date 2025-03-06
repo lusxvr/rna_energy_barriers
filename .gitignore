@@ -1,5 +1,5 @@
 # Custom added
-tmp.svg
+tmp*.svg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
