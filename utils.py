@@ -67,6 +67,25 @@ def bplist2db(n, basepairs):
 # example
 #bplist2db(20,[(0,19),(1,17),(2,8),(3,7),(9,16),(10,14)])
 
+def dotbracket_to_pt(structure):
+    """
+    Convert a dot-bracket string to a pair table.
+    Returns a list 'pt' of length n+1 (1-indexed; pt[0] is unused).
+    For each i (1-indexed), pt[i] = j if base i is paired with j, else 0.
+    """
+    n = len(structure)
+    pt = [0]*(n+1)
+    stack = []
+    for i, char in enumerate(structure, start=1):
+        if char == '(':
+            stack.append(i)
+        elif char == ')':
+            if stack:
+                j = stack.pop()
+                pt[i] = j
+                pt[j] = i
+    return pt
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
