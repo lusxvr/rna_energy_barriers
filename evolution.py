@@ -21,7 +21,7 @@ def init_population(seq, start_struct, N):
         population.append(individual)
     return population
 
-def evolve_population_inclusive(population, seq, fc, start_struct, end_struct, alpha=0.7, T=T_CONST, beta=0):
+def evolve_population_inclusive(population, seq, fc, start_struct, end_struct, alpha=0.7, T=pf.T_CONST, beta=0):
     """
     For each individual in the current population, perform one evolutionary step
     to generate a new candidate via a one-base move. Then, combine the new candidates
@@ -85,7 +85,7 @@ def compute_barrier(population):
         if ind['distance'] == 0:
             return ind['highest_energy']
         
-def best_folding(seq, start_struct, end_struct, alpha = 0.7, N = 100, max_steps = 100, T=T_CONST, beta=0):
+def best_folding(seq, start_struct, end_struct, alpha = 0.7, N = 100, max_steps = 100, T=pf.T_CONST, beta=0):
     """
     Given a sequence, start and end structures, evolve a population of structures
     to find the one with the smallest distance to the end structure.

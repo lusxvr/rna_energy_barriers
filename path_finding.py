@@ -117,15 +117,15 @@ def structure_distance(s1, s2):
 
 def move_probabilities(moves, end_struct, fc, T=T_CONST, beta=0):
     """
-    Pour chaque mouvement dans 'moves' (liste de tuples (new_structure, move_type, (i, j))),
-    calcule l'énergie libre à l'aide du fold compound 'fc' de ViennaRNA et retourne la probabilité
-    associée à chaque mouvement selon la loi de Boltzmann.
+    For each move in 'moves' (list of tuples (new_structure, move_type, (i, j))),
+    calculates the free energy using ViennaRNA's fold compound 'fc' and returns
+    the probability associated with each move according to the Boltzmann law.
     
-    Renvoie une liste de probabilités correspondant aux mouvements.
+    Returns a list of probabilities corresponding to the moves.
     """
     energies = []
     for new_struct, move_type, pos in moves:
-        # Calcule l'énergie libre de la structure résultante (en kcal/mol).
+        # Calculate the free energy of the resulting structure (in kcal/mol)
         E = fc.eval_structure(new_struct)
         energies.append(E)
 
@@ -133,11 +133,11 @@ def move_probabilities(moves, end_struct, fc, T=T_CONST, beta=0):
         m = structure_distance(new_struct, end_struct)
         energies[k] += beta*m
     
-    # Détermination de l'énergie minimale pour factoriser les exponentielles
+    # Determine the minimum energy to factor the exponentials
     E_min = min(energies)
     
-    # Calcul des poids de Boltzmann en factorisant par l'énergie minimale.
-    # Ainsi, weight = exp(- (E - E_min) / (R_CONST * T_CONST))
+    # Calculate Boltzmann weights by factoring out the minimum energy.
+    # Thus, weight = exp(- (E - E_min) / (R_CONST * T_CONST))
     weights = [math.exp(-(E - E_min) / (R_CONST * T)) for E in energies]
     
     total = sum(weights)
