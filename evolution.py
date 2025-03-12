@@ -15,8 +15,10 @@ def init_population(seq, start_struct, N):
     for _ in range(N):
         individual = {
             'structure': start_struct,
-            'distance': 1,  # will be updated later
-            'highest_energy': 0
+            'distance': 1,
+            'highest_energy': 0,
+            'path': [start_struct],
+            'energy_profile': [0]  # Will be set to actual energy later
         }
         population.append(individual)
     return population
@@ -36,12 +38,19 @@ def evolve_population_inclusive(population, seq, fc, start_struct, end_struct, a
     # Generate new candidates for each individual
     for individual in population:
         current_struct = individual['structure']
-        next_struct, _ = pf.select_next_structure(seq, current_struct, end_struct, fc, T=T, beta=beta)
+        next_struct, move_info = pf.select_next_structure(seq, current_struct, end_struct, fc, T=T, beta=beta)
         dist = pf.structure_distance(next_struct, end_struct)
+        
+        # Track the path taken
+        path = individual.get('path', [start_struct])
+        energy_profile = individual.get('energy_profile', [fc.eval_structure(start_struct)])
+        
         candidate = {
             'structure': next_struct,
             'distance': dist,
-            'highest_energy': max(individual['highest_energy'], fc.eval_structure(individual['structure'])-fc.eval_structure(start_struct))
+            'highest_energy': max(individual['highest_energy'], fc.eval_structure(next_struct)-fc.eval_structure(start_struct)),
+            'path': path + [next_struct],
+            'energy_profile': energy_profile + [fc.eval_structure(next_struct)]
         }
         new_candidates.append(candidate)
     
@@ -52,7 +61,9 @@ def evolve_population_inclusive(population, seq, fc, start_struct, end_struct, a
         current_with_distance.append({
             'structure': ind['structure'],
             'distance': d,
-            'highest_energy': ind['highest_energy']
+            'highest_energy': ind['highest_energy'],
+            'path': ind.get('path', [start_struct]),
+            'energy_profile': ind.get('energy_profile', [fc.eval_structure(start_struct)])
         })
     
     # Combine the old population with the new candidates
@@ -70,7 +81,7 @@ def evolve_population_inclusive(population, seq, fc, start_struct, end_struct, a
 
     # Select N/3 individuals at random among the remaining ones
     remaining_individuals = combined[N:]
-    random_individuals = random.sample(remaining_individuals, random_count)
+    random_individuals = random.sample(remaining_individuals, random_count) if remaining_individuals else []
 
     # Create the new population by combining the best and random individuals
     new_population = best_individuals + random_individuals
