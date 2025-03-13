@@ -2,8 +2,8 @@ from typing import List, Tuple, Set
 import math
 import random
 
-from rna_structure import RNAStructure
-import utils
+from src.rna_structure import RNAStructure
+import src.utils as utils
 
 # Global constants (R in kcal/(mol*K), T in Kelvin)
 R_CONST = 0.0019872   # kcal/(mol*K)

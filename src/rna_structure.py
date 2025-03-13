@@ -1,6 +1,6 @@
 from typing import List, Set, Tuple, Optional
 import numpy as np
-from utils import complementary, bplist2db, bcolors
+from src.utils import complementary, bplist2db, bcolors
 
 class RNAStructure:
     def __init__(self, sequence: str, structure: Optional[str] = None, base_pairs: Optional[Set[Tuple[int, int]]] = None):

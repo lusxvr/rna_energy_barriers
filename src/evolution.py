@@ -1,7 +1,7 @@
 import random
 import RNA
 
-import path_finding as pf
+import src.path_finding as pf
 
 def init_population(seq, start_struct, N):
     """

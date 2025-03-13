@@ -1,5 +1,5 @@
 from typing import List
-from rna_structure import RNAStructure
+from src.rna_structure import RNAStructure
 import RNA
 
 def base_pair_minimization_energy(structure: RNAStructure) -> float:
