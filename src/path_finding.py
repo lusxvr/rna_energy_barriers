@@ -173,16 +173,16 @@ def select_next_structure(seq, current_structure, end_struct, fc, T=T_CONST, bet
 ######################
 
 DEFAULT_PARAMS = {
-            'base_random_chance': 0.1,
+            'base_random_chance': 0.2,
             'tabu_size': 15,
-            'beam_width': 1,
+            'beam_width': 2,
             'max_random_chance': 0.5,
             'direct_move_threshold': 100
 }
 
 def find_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, 
                       # Path search parameters
-                      max_iterations=2000,
+                      max_iterations=1000,
                       # Randomness control parameters  
                       random_params=DEFAULT_PARAMS) -> List[RNAStructure]:
     """
@@ -557,9 +557,9 @@ def find_best_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, num
         DEFAULT_PARAMS,
         # More exploration
         {
-            'base_random_chance': 0.4,
+            'base_random_chance': 0.3,
             'tabu_size': 20,
-            'beam_width': 2,
+            'beam_width': 3,
             'max_random_chance': 0.9,
             'direct_move_threshold': 80
         },
@@ -567,9 +567,17 @@ def find_best_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, num
         {
             'base_random_chance': 0.1,
             'tabu_size': 10,
-            'beam_width': 5,
+            'beam_width': 3,
             'max_random_chance': 0.6,
             'direct_move_threshold': 120
+        },
+        # More exploitation
+        {
+            'base_random_chance': 0.1,
+            'tabu_size': 20,
+            'beam_width': 5,
+            'max_random_chance': 0.8,
+            'direct_move_threshold': 150
         }
     ]
     
@@ -583,15 +591,15 @@ def find_best_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, num
         else:
             # Generate random parameters for diversity
             random_params = {
-                'base_random_chance': 0.1 + (0.3 * random.random()),
+                'base_random_chance': 0.1 + (0.2 * random.random()),
                 'tabu_size': random.randint(10, 25),
-                'beam_width': random.randint(2, 5),
-                'max_random_chance': 0.7 + (0.2 * random.random()),
+                'beam_width': random.randint(2, 7),
+                'max_random_chance': 0.5 + (0.2 * random.random()),
                 'direct_move_threshold': random.randint(80, 120)
             }
         
         # For complex structures, increase iterations
-        max_iterations = 2500 + bp_distance * 10
+        max_iterations = 1000 + bp_distance * 10
         
         try:
             path = find_indirect_path(
