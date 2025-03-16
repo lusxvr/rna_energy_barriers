@@ -575,7 +575,7 @@ def find_best_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, num
     
     # Try different parameter combinations
     for attempt in range(adjusted_attempts):
-        print(f"Starting indirect path attempt {attempt+1}/{adjusted_attempts}")
+        #print(f"Starting indirect path attempt {attempt+1}/{adjusted_attempts}")
         
         # Use predefined parameter sets or generate random ones
         if attempt < len(parameter_sets):

@@ -1,4 +1,17 @@
 import numpy as np
+import RNA
+import matplotlib.pyplot as plt
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 _complementary_bases = set(["AU","CG","GC","GU","UA","UG"])
 def complementary(x,y):
@@ -86,13 +99,66 @@ def dotbracket_to_pt(structure):
                 pt[j] = i
     return pt
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+def plot_energy_profiles(seq, evolutionary_path, direct_path, indirect_path):
+    """
+    Plot energy profiles for both evolutionary and direct paths
+    
+    Args:
+        seq: RNA sequence
+        evolutionary_path: List of structures from evolutionary algorithm
+        direct_path: List of structures from direct path
+        indirect_path: List of structures from indirect path
+
+    """
+    fc = RNA.fold_compound(seq)
+    
+    # Calculate energies for evolutionary path
+    evo_energies = [fc.eval_structure(struct) for struct in evolutionary_path]
+    evo_steps = range(len(evo_energies))
+    
+    # Calculate energies for direct path
+    direct_energies = [fc.eval_structure(struct) for struct in direct_path]
+    direct_steps = range(len(direct_energies))
+
+    # Calculate energies for indirect path
+    indirect_energies = [fc.eval_structure(struct) for struct in indirect_path]
+    indirect_steps = range(len(indirect_energies))
+    
+    # Create the plot
+    plt.figure(figsize=(12, 6))
+    plt.plot(evo_steps, evo_energies, 'b-', label='Evolutionary Path')
+    plt.plot(direct_steps, direct_energies, 'r--', label='Direct Path')
+    plt.plot(indirect_steps, indirect_energies, 'g--', label='Indirect Path')
+
+    
+    # Add labels and title
+    plt.xlabel('Step')
+    plt.ylabel('Energy (kcal/mol)')
+    plt.title('Energy Profiles Comparison')
+    plt.grid(True)
+    plt.legend()
+    
+    # Show the plot
+    plt.show()
+    
+    # Print some statistics
+    print(f"Evolutionary Path:")
+    print(f"- Initial energy: {evo_energies[0]:.2f} kcal/mol")
+    print(f"- Final energy: {evo_energies[-1]:.2f} kcal/mol")
+    print(f"- Maximum energy: {max(evo_energies):.2f} kcal/mol")
+    print(f"- Energy barrier: {max(evo_energies) - evo_energies[0]:.2f} kcal/mol")
+    print(f"- Path length: {len(evo_energies)} steps")
+    
+    print(f"\nDirect Path:")
+    print(f"- Initial energy: {direct_energies[0]:.2f} kcal/mol")
+    print(f"- Final energy: {direct_energies[-1]:.2f} kcal/mol")
+    print(f"- Maximum energy: {max(direct_energies):.2f} kcal/mol")
+    print(f"- Energy barrier: {max(direct_energies) - direct_energies[0]:.2f} kcal/mol")
+    print(f"- Path length: {len(direct_energies)} steps")
+
+    print(f"\nIndirect Path:")
+    print(f"- Initial energy: {indirect_energies[0]:.2f} kcal/mol")
+    print(f"- Final energy: {indirect_energies[-1]:.2f} kcal/mol")
+    print(f"- Maximum energy: {max(indirect_energies):.2f} kcal/mol")
+    print(f"- Energy barrier: {max(indirect_energies) - indirect_energies[0]:.2f} kcal/mol")
+    print(f"- Path length: {len(indirect_energies)} steps")
