@@ -96,7 +96,7 @@ def compute_barrier(population):
         if ind['distance'] == 0:
             return ind['highest_energy']
         
-def best_folding(seq, start_struct, end_struct, alpha = 0.7, N = 100, max_steps = 100, T=pf.T_CONST, beta=0):
+def best_folding(seq, start_struct, end_struct, alpha = 0.7, N = 100, max_steps = 100, beta=0, T=pf.T_CONST):
     """
     Given a sequence, start and end structures, evolve a population of structures
     to find the one with the smallest distance to the end structure.

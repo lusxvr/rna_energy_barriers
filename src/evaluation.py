@@ -12,7 +12,7 @@ from sklearn.manifold import TSNE
 from scipy.stats import pearsonr, spearmanr
 
 from src.rna_structure import RNAStructure
-from src.path_finding import find_direct_path, find_best_indirect_path
+from src.path_finding import find_direct_path, find_best_indirect_path, T_CONST
 from src.evolution import best_folding
 import src.energy as energy
 
@@ -106,7 +106,7 @@ def classify_transition(struct1: str, struct2: str) -> str:
 
 def compare_algorithms(sequence: str, start_struct: str, end_struct: str, 
                      methods=['direct', 'indirect', 'evolutionary'],
-                     evolutionary_params={'N': 100, 'max_steps': 100, 'alpha': 0.7, 'beta': 0},
+                     evolutionary_params={'N': 100, 'max_steps': 100, 'alpha': 0.7, 'beta': 0, 'T': T_CONST},
                      indirect_attempts=5) -> Dict[str, Dict[str, Any]]:
     """
     Compare different path-finding algorithms on the same RNA folding problem.
@@ -160,7 +160,8 @@ def compare_algorithms(sequence: str, start_struct: str, end_struct: str,
             N=evolutionary_params.get('N', 100),
             max_steps=evolutionary_params.get('max_steps', 100),
             alpha=evolutionary_params.get('alpha', 0.7),
-            beta=evolutionary_params.get('beta', 0)
+            beta=evolutionary_params.get('beta', 0),
+            T=evolutionary_params.get('T', T_CONST)
         )
         execution_time = time.time() - start_time
         
