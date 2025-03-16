@@ -516,7 +516,7 @@ def find_indirect_path(start: RNAStructure, end: RNAStructure, fc=None,
     
     return path
 
-def find_best_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, num_attempts=5) -> Tuple[List[RNAStructure], float]:
+def find_best_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, num_attempts=10) -> Tuple[List[RNAStructure], float]:
     """
     Find the best indirect path by running the indirect path finder multiple times
     with different parameters and selecting the path with the lowest energy barrier.
@@ -543,7 +543,7 @@ def find_best_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, num
     print(f"Base pair distance between structures: {bp_distance}")
     
     # Adjust number of attempts based on complexity
-    adjusted_attempts = min(num_attempts, 3 + int(bp_distance / 10))
+    adjusted_attempts = max(num_attempts, num_attempts + int(bp_distance / 10))
     
     best_path = None
     lowest_barrier = float('inf')
@@ -591,7 +591,7 @@ def find_best_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, num
             }
         
         # For complex structures, increase iterations
-        max_iterations = 1000 + bp_distance * 10
+        max_iterations = 2500 + bp_distance * 10
         
         try:
             path = find_indirect_path(
