@@ -8,8 +8,8 @@ LONG_END_STRUCT = ".(((..(((((((......((((.......))))...........(((((((.......))
 
 
 MED_SEQ = "GGAAGCGUAUCGUCACCGGUGUGGCGCCCGGUCUUCAAAACCGGUGGACGGCUGAGAGGUCGUCGGUAGGUUCGACUCCUAUACGCUUCC"
-MED_END_STRUCT = "(((((((((.((((((....))))))((((((.......)))))).(((((........)))))..((((.......)))))))))))))"
 MED_START_STRUCT = "((((((((((...(((((((..(((.....)))......)))))))(((((((....)))))))((.((......)))).))))))))))"
+MED_END_STRUCT = "(((((((((.((((((....)))))).(((((.......)))))..(((((........)))))..((((.......)))))))))))))"
 
 VLONG_SEQ = "GGCUGGUCCGAAGGUAGUGAGUUAUCUCAAUUGAUUGUUCACAGUCAGUUACAGAUUGAACUCCUUGUUCUACUCUUUCCCCCCUUCUCACUACUGCACUUGACUAGUCUUUU"
 VLONG_START_STRUCT = "((((((((.((..((((((((.....................(((.((.....................)).)))...........))))))...))..))))))))))...."
