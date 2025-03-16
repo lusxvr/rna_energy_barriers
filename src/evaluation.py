@@ -12,7 +12,7 @@ from sklearn.manifold import TSNE
 from scipy.stats import pearsonr, spearmanr
 
 from src.rna_structure import RNAStructure
-from src.path_finding import find_direct_path, find_best_indirect_path
+from src.path_finding import find_direct_path, find_best_indirect_path, structure_distance, T_CONST
 from src.evolution import best_folding
 import src.energy as energy
 
@@ -38,7 +38,7 @@ def calculate_path_metrics(sequence: str, path: List[str]) -> Dict[str, Any]:
             "final_energy": 0,
             "max_energy": 0,
             "min_energy": 0,
-            "transitions": []
+            "transitions": [],
         }
     
     # Create ViennaRNA fold compound
@@ -69,7 +69,7 @@ def calculate_path_metrics(sequence: str, path: List[str]) -> Dict[str, Any]:
         "transition_types": transition_types,
         "add_transitions": type_counts.get("add", 0),
         "remove_transitions": type_counts.get("remove", 0),
-        "both_transitions": type_counts.get("both", 0)
+        "both_transitions": type_counts.get("both", 0),
     }
 
 
@@ -106,7 +106,7 @@ def classify_transition(struct1: str, struct2: str) -> str:
 
 def compare_algorithms(sequence: str, start_struct: str, end_struct: str, 
                      methods=['direct', 'indirect', 'evolutionary'],
-                     evolutionary_params={'N': 100, 'max_steps': 100, 'alpha': 0.7, 'beta': 0},
+                     evolutionary_params={'N': 100, 'max_steps': 100, 'alpha': 0.7, 'beta': 0, 'T': T_CONST},
                      indirect_attempts=5) -> Dict[str, Dict[str, Any]]:
     """
     Compare different path-finding algorithms on the same RNA folding problem.
@@ -137,6 +137,7 @@ def compare_algorithms(sequence: str, start_struct: str, end_struct: str,
         
         metrics = calculate_path_metrics(sequence, direct_path_str)
         metrics['execution_time'] = execution_time
+        metrics['structure_distance'] = structure_distance(end_struct, direct_path_str[-1])
         results['direct'] = metrics
     
     # Indirect path
@@ -148,6 +149,7 @@ def compare_algorithms(sequence: str, start_struct: str, end_struct: str,
         
         metrics = calculate_path_metrics(sequence, indirect_path_str)
         metrics['execution_time'] = execution_time
+        metrics['structure_distance'] = structure_distance(end_struct, indirect_path_str[-1])
         results['indirect'] = metrics
     
     # Evolutionary approach
@@ -160,7 +162,8 @@ def compare_algorithms(sequence: str, start_struct: str, end_struct: str,
             N=evolutionary_params.get('N', 100),
             max_steps=evolutionary_params.get('max_steps', 100),
             alpha=evolutionary_params.get('alpha', 0.7),
-            beta=evolutionary_params.get('beta', 0)
+            beta=evolutionary_params.get('beta', 0),
+            T=evolutionary_params.get('T', T_CONST)
         )
         execution_time = time.time() - start_time
         
@@ -168,6 +171,7 @@ def compare_algorithms(sequence: str, start_struct: str, end_struct: str,
         metrics = calculate_path_metrics(sequence, evolutionary_path)
         metrics['execution_time'] = execution_time
         metrics['generation_steps'] = steps
+        metrics['structure_distance'] = structure_distance(end_struct, evolutionary_path[-1])
         results['evolutionary'] = metrics
     
     return results
