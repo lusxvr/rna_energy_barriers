@@ -143,7 +143,7 @@ def compare_algorithms(sequence: str, start_struct: str, end_struct: str,
     # Indirect path
     if 'indirect' in methods:
         start_time = time.time()
-        indirect_path = find_best_indirect_path(start, end, num_attempts=indirect_attempts)
+        indirect_path = find_best_indirect_path(start, end, num_attempts=indirect_attempts, max_barrier_threshold=10000)
         indirect_path_str = [p.to_dotbracket() for p in indirect_path]
         execution_time = time.time() - start_time
         
@@ -191,12 +191,19 @@ def plot_comparison(results: Dict[str, Dict[str, Any]], figsize=(14, 10), save_p
     
     methods = list(results.keys())
     
+    # Define lighter colors for each method (similar to seaborn palette)
+    colors = {
+        'direct': '#4c72b0',  # lighter blue
+        'indirect': '#dd8452',  # lighter orange
+        'evolutionary': '#55a868'  # lighter green
+    }
+    
     # Energy profiles
     ax = axs[0, 0]
     for method in methods:
         energy_profile = results[method]['energy_profile']
         steps = list(range(len(energy_profile)))
-        ax.plot(steps, energy_profile, marker='o', label=method.capitalize())
+        ax.plot(steps, energy_profile, marker='o', label=method.capitalize(), color=colors[method])
     
     ax.set_title('Energy Profiles')
     ax.set_xlabel('Step')
@@ -207,7 +214,7 @@ def plot_comparison(results: Dict[str, Dict[str, Any]], figsize=(14, 10), save_p
     # Energy barriers
     ax = axs[0, 1]
     barriers = [results[method]['energy_barrier'] for method in methods]
-    ax.bar(methods, barriers)
+    ax.bar(methods, barriers, color=[colors[m] for m in methods])
     ax.set_title('Energy Barriers')
     ax.set_xlabel('Method')
     ax.set_ylabel('Energy Barrier (kcal/mol)')
@@ -217,7 +224,7 @@ def plot_comparison(results: Dict[str, Dict[str, Any]], figsize=(14, 10), save_p
     # Path lengths
     ax = axs[1, 0]
     path_lengths = [results[method]['path_length'] for method in methods]
-    ax.bar(methods, path_lengths)
+    ax.bar(methods, path_lengths, color=[colors[m] for m in methods])
     ax.set_title('Path Lengths')
     ax.set_xlabel('Method')
     ax.set_ylabel('Number of Steps')
@@ -227,7 +234,7 @@ def plot_comparison(results: Dict[str, Dict[str, Any]], figsize=(14, 10), save_p
     # Execution times
     ax = axs[1, 1]
     times = [results[method]['execution_time'] for method in methods]
-    ax.bar(methods, times)
+    ax.bar(methods, times, color=[colors[m] for m in methods])
     ax.set_title('Execution Times')
     ax.set_xlabel('Method')
     ax.set_ylabel('Time (seconds)')

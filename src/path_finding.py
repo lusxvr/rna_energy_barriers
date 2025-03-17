@@ -516,7 +516,7 @@ def find_indirect_path(start: RNAStructure, end: RNAStructure, fc=None,
     
     return path
 
-def find_best_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, num_attempts=10) -> Tuple[List[RNAStructure], float]:
+def find_best_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, num_attempts=10, max_barrier_threshold=10000) -> List[RNAStructure]:
     """
     Find the best indirect path by running the indirect path finder multiple times
     with different parameters and selecting the path with the lowest energy barrier.
@@ -526,9 +526,10 @@ def find_best_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, num
         end: Target RNA structure
         fc: ViennaRNA fold compound (if None, will be created)
         num_attempts: Number of attempts to run the indirect path finder
+        max_barrier_threshold: Maximum allowed energy barrier, paths with barriers above this are rejected
         
     Returns:
-        Tuple containing (best path, energy barrier)
+        List of structures forming the best path found with the lowest energy barrier
     """
     # Create fold compound if not provided
     if fc is None:
@@ -551,27 +552,22 @@ def find_best_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, num
     # Calculate start energy once
     start_energy = fc.eval_structure(start.to_dotbracket())
     
-    # Predefined parameter sets for different search strategies
+    # Predefined parameter sets for diversity
     parameter_sets = [
-        # Balanced approach
-        DEFAULT_PARAMS,
-        # More exploration
-        {
-            'base_random_chance': 0.3,
-            'tabu_size': 20,
-            'beam_width': 3,
-            'max_random_chance': 0.9,
-            'direct_move_threshold': 80
-        },
-        # More exploitation
         {
             'base_random_chance': 0.1,
             'tabu_size': 10,
             'beam_width': 3,
             'max_random_chance': 0.6,
+            'direct_move_threshold': 100
+        },
+        {
+            'base_random_chance': 0.2,
+            'tabu_size': 15,
+            'beam_width': 5,
+            'max_random_chance': 0.7,
             'direct_move_threshold': 120
         },
-        # More exploitation
         {
             'base_random_chance': 0.1,
             'tabu_size': 20,
@@ -599,7 +595,7 @@ def find_best_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, num
             }
         
         # For complex structures, increase iterations
-        max_iterations = 1000 + bp_distance * 10
+        max_iterations = 2000 + bp_distance * 10
         
         try:
             path = find_indirect_path(
@@ -622,6 +618,11 @@ def find_best_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, num
             
             barrier = max_energy - start_energy
             
+            # Skip paths with unrealistically high barriers (likely errors)
+            if barrier > max_barrier_threshold:
+                print(f"Attempt {attempt+1}: path length = {len(path)}, energy barrier = {barrier:.2f} - Skipping (above threshold)")
+                continue
+            
             print(f"Attempt {attempt+1}: path length = {len(path)}, energy barrier = {barrier:.2f}")
             
             if barrier < lowest_barrier:
@@ -641,6 +642,94 @@ def find_best_indirect_path(start: RNAStructure, end: RNAStructure, fc=None, num
             energy = fc.eval_structure(structure.to_dotbracket())
             max_energy = max(max_energy, energy)
         lowest_barrier = max_energy - start_energy
-        print(f"Direct path barrier: {lowest_barrier:.2f}")
+        
+        # Don't use direct path if it also has an unrealistically high barrier
+        if lowest_barrier > max_barrier_threshold:
+            print(f"Direct path barrier too high: {lowest_barrier:.2f} - Unable to find suitable path")
+            return [] # Return empty list when no suitable path is found
+        else:
+            print(f"Direct path barrier: {lowest_barrier:.2f}")
     
     return best_path
+
+def main():
+    """
+    Command-line interface for running path finding algorithms.
+    """
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='RNA Structure Path Finding')
+    parser.add_argument('sequence', type=str, help='RNA sequence')
+    parser.add_argument('start_structure', type=str, help='Starting structure in dot-bracket notation')
+    parser.add_argument('end_structure', type=str, help='Target structure in dot-bracket notation')
+    parser.add_argument('--method', type=str, choices=['direct', 'indirect'], default='indirect',
+                        help='Path finding method to use')
+    parser.add_argument('--attempts', type=int, default=10, 
+                        help='Number of attempts for indirect path finding')
+    parser.add_argument('--max_barrier', type=float, default=10000,
+                        help='Maximum allowed energy barrier, paths with barriers above this are rejected')
+    
+    args = parser.parse_args()
+    
+    # Check sequence length and structure compatibility
+    if len(args.sequence) != len(args.start_structure) or len(args.sequence) != len(args.end_structure):
+        print("Error: Sequence and structure lengths must match.")
+        return
+    
+    # Create RNA structures
+    start = RNAStructure(args.sequence, args.start_structure)
+    end = RNAStructure(args.sequence, args.end_structure)
+    
+    # Create fold compound for energy calculations
+    try:
+        fc = RNA.fold_compound(args.sequence)
+    except Exception as e:
+        print(f"Error creating fold compound: {e}")
+        return
+    
+    # Run path finding
+    print(f"Finding path from {args.start_structure} to {args.end_structure}")
+    
+    if args.method == 'direct':
+        path = find_direct_path(start, end)
+        print(f"Found direct path with {len(path)} steps")
+    else:
+        path = find_best_indirect_path(start, end, fc, 
+                                      num_attempts=args.attempts,
+                                      max_barrier_threshold=args.max_barrier)
+        if not path:
+            print("Failed to find a path with acceptable energy barrier.")
+            return
+        print(f"Found indirect path with {len(path)} steps")
+    
+    # Calculate and display energy profile
+    start_energy = fc.eval_structure(args.start_structure)
+    max_energy = start_energy
+    energies = [start_energy]
+    
+    for i, structure in enumerate(path[1:], 1):
+        db = structure.to_dotbracket()
+        energy = fc.eval_structure(db)
+        energies.append(energy)
+        max_energy = max(max_energy, energy)
+        print(f"Step {i}: {db} (Energy: {energy:.2f})")
+    
+    barrier = max_energy - start_energy
+    print(f"Energy barrier: {barrier:.2f}")
+    
+    # Optionally plot the energy profile
+    try:
+        import matplotlib.pyplot as plt
+        plt.figure(figsize=(10, 6))
+        plt.plot(range(len(energies)), energies)
+        plt.grid(True)
+        plt.xlabel('Step')
+        plt.ylabel('Energy (kcal/mol)')
+        plt.title(f'Energy Profile ({args.method.capitalize()} Path)')
+        plt.savefig(f"{args.method}_path_energy_profile.png")
+        print(f"Energy profile saved to {args.method}_path_energy_profile.png")
+    except ImportError:
+        print("Matplotlib not available - skipping plot generation")
+
+if __name__ == "__main__":
+    main()

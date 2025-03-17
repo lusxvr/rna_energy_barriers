@@ -126,9 +126,9 @@ def plot_energy_profiles(seq, evolutionary_path, direct_path, indirect_path):
     
     # Create the plot
     plt.figure(figsize=(12, 6))
-    plt.plot(evo_steps, evo_energies, 'b-', label='Evolutionary Path')
-    plt.plot(direct_steps, direct_energies, 'r--', label='Direct Path')
-    plt.plot(indirect_steps, indirect_energies, 'g--', label='Indirect Path')
+    plt.plot(evo_steps, evo_energies, color='#55a868', marker='o', label='Evolutionary Path')
+    plt.plot(direct_steps, direct_energies, color='#4c72b0', marker='o', label='Direct Path')
+    plt.plot(indirect_steps, indirect_energies, color='#dd8452', marker='o', label='Indirect Path')
 
     
     # Add labels and title
